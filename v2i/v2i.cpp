@@ -1,10 +1,9 @@
-#include "Windows.h"
-#include "cv.h"
-#include "highgui.h"
-
+#include <iostream>
+#include <opencv2/opencv.hpp>
 
 //#define DIR_SEQ "E:\\Data\\bsd\\20140826\\s4\\"
 
+using namespace std;
 using namespace cv;
 
 int main(int argc, char **argv)
@@ -28,7 +27,6 @@ int main(int argc, char **argv)
 	else
 		preName = argv[2];
 
-	//for (j = 0; j < 4; j++)
 	{
 		//sprintf_s(name, 200, "%s%d.avi", DIR_SEQ, j);
 		VideoCapture v1(argv[1]);
@@ -42,6 +40,8 @@ int main(int argc, char **argv)
 			v1.read(img);
 			sprintf_s(name, 200, "img/%s%08d.png", preName, i);
 			printf("writing frame %d / %d\n", i, frameCount);
+			imshow("video", img);
+			waitKey(10);
 			imwrite(name, img);
 		}
 	}
