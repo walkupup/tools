@@ -7,6 +7,7 @@ int main(int, char**)
 {
 	int width = 720;
 	int height = 576;
+	int frameNum = 0;
 	VideoCapture cap(0); // open the default camera
 	Mat frame;
 	std::string videoName = "d:\\1.avi";
@@ -16,7 +17,7 @@ int main(int, char**)
 	printf("framerate = %f, format = %f\n", cap.get(CV_CAP_PROP_FPS), cap.get(CV_CAP_PROP_FORMAT));
 
 	cap >> frame; // get a new frame from camera
-	VideoWriter save(videoName, -1, 5, Size(frame.cols, frame.rows));
+	VideoWriter save(videoName, -1, 15, Size(frame.cols, frame.rows));
 	if (!cap.isOpened()) // check if we succeeded
 		return -1;
 	namedWindow("capture", 1);
@@ -27,10 +28,11 @@ int main(int, char**)
 		cap >> frame; // get a new frame from camera
 		save << frame;
 		imshow("capture", frame);
+		printf("frame %d\n", frameNum++);
 		if (waitKey(1) == 'c')
 			break;
 	}
 
-	cap.release();
+	save.release();
 	return 0;
 }
