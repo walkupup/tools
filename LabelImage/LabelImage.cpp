@@ -64,7 +64,7 @@ void saveLabelImage(char *name, vector<Rect>& rec)
 		if (rec[i].x + rec[i].width > img.cols || rec[i].x < 0 ||
 			rec[i].y + rec[i].height > img.rows || rec[i].y < 0)
 			continue;
-		sprintf(negName, "neg/neg%08d.png", num);
+		sprintf(negName, "neg/neg%08d.jpg", num);
 		imwrite(negName, img(rec[i]));
 		num++;
 	}
@@ -123,6 +123,7 @@ static void onMouse(int event, int x, int y, int, void*)
 			else
 				rectangle(img, startPt, endPt, CV_RGB(0, 255, 0), 1, 8, 0);
 			imshow("image", img);
+			//waitKey(1);
 		}
 		break;
 	}
@@ -219,52 +220,52 @@ int main(int argc, TCHAR* argv[])
 
 	if (buf[0] == 's') // 按帧号标注
 	{
-	swprintf(name, 100, _T("*%d.*"), startNum);
-	hFind = FindFirstFile(name, &FindFileData);
-	if (hFind == INVALID_HANDLE_VALUE)
-	{
-		printf("can't find frame %d\n", startNum);
-		return 0;
-	}
-	do {
-		char aa;
-		WideCharToMultiByte(CP_OEMCP, NULL, FindFileData.cFileName, -1, fileName, 200, NULL, FALSE);
-		printf("从 %s 开始? y / n: ", fileName);
-		scanf("%s", &aa);
-		if (aa == 'y' || aa == 'Y')
-			break;
-	} while (FindNextFile(hFind, &FindFileData));
-
-	WideCharToMultiByte(CP_OEMCP, NULL, FindFileData.cFileName, -1, fileName, 200, NULL, FALSE);
-
-	printf("开始标注 %s\n", fileName);
-
-	int len = strlen(fileName);
-
-	// 判断是否为正确图像扩展名
-	if (strcmp(&fileName[len - 3], "png") == 0)
-		strcpy(extName, ".png");
-	else if (strcmp(&fileName[len - 3], "jpg") == 0)
-		strcpy(extName, ".jpg");
-	else
-		return 0;
-
-	char startNumStr[10];
-	sprintf(startNumStr, "%d", startNum);
-	char *p = strstr(fileName, startNumStr); 
-	while (p > fileName)
-	{
-		if (p[-1] == '0')
+		swprintf(name, 100, _T("*%d.*"), startNum);
+		hFind = FindFirstFile(name, &FindFileData);
+		if (hFind == INVALID_HANDLE_VALUE)
 		{
-			padZero++;
-			p--;
+			printf("can't find frame %d\n", startNum);
+			return 0;
 		}
+		do {
+			char aa;
+			WideCharToMultiByte(CP_OEMCP, NULL, FindFileData.cFileName, -1, fileName, 200, NULL, FALSE);
+			printf("从 %s 开始? y / n: ", fileName);
+			scanf("%s", &aa);
+			if (aa == 'y' || aa == 'Y')
+				break;
+		} while (FindNextFile(hFind, &FindFileData));
+
+		WideCharToMultiByte(CP_OEMCP, NULL, FindFileData.cFileName, -1, fileName, 200, NULL, FALSE);
+
+		printf("开始标注 %s\n", fileName);
+
+		int len = strlen(fileName);
+
+		// 判断是否为正确图像扩展名
+		if (strcmp(&fileName[len - 3], "png") == 0)
+			strcpy(extName, ".png");
+		else if (strcmp(&fileName[len - 3], "jpg") == 0)
+			strcpy(extName, ".jpg");
 		else
-			break;
-	}
-	memcpy(preName, fileName, p - fileName);
-	preName[p - fileName] = '\0';
-	padZero += strlen(startNumStr);
+			return 0;
+
+		char startNumStr[10];
+		sprintf(startNumStr, "%d", startNum);
+		char *p = strstr(fileName, startNumStr); 
+		while (p > fileName)
+		{
+			if (p[-1] == '0')
+			{
+				padZero++;
+				p--;
+			}
+			else
+				break;
+		}
+		memcpy(preName, fileName, p - fileName);
+		preName[p - fileName] = '\0';
+		padZero += strlen(startNumStr);
 	}
 	else if (buf[0] == 'x') // 任意顺序标注
 	{
@@ -285,7 +286,7 @@ int main(int argc, TCHAR* argv[])
 			printf("找到 png 文件! \n");
 	}
 
-	namedWindow("image", 0);
+	namedWindow("image");// 0);
 	setMouseCallback("image", onMouse, 0);
 	fopen_s(&fpos, "pos.txt", "wt");
 	fclose(fpos);
@@ -313,7 +314,7 @@ int main(int argc, TCHAR* argv[])
 			strcat(fileName, midName);
 			strcat(fileName, extName);
 		}
-		else
+		else if (buf[0] == 'x')
 		{
 			WideCharToMultiByte(CP_OEMCP, NULL, FindFileData.cFileName, -1, fileName, 200, NULL, FALSE);
 			if (!FindNextFile(hFind, &FindFileData))
@@ -325,7 +326,7 @@ int main(int argc, TCHAR* argv[])
 		if (img.data == NULL)
 		{
 			printf("文件 %s 丢失, 或标注完成\n", fileName);
-			break;
+			continue;
 		}
 		putText(img, fileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
 		img.copyTo(backupImg);
