@@ -15,6 +15,8 @@ vector<Rect> posBuf;
 vector<Rect> negBuf;
 int lastFlag = 1;	// 1为positive, 0位negtive
 
+void labelEidt(string fileName);
+
 // 恢复原图和现有的矩形框
 void restortImage(Mat& img, vector<Rect>& rec1, vector<Rect>& rec2)
 {
@@ -175,7 +177,7 @@ void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 int main(int argc, TCHAR* argv[])
 {
 	WIN32_FIND_DATA FindFileData;
-	HANDLE hFind;
+	HANDLE hFind = NULL;
 	FILE *fpos, *fneg;
 	TCHAR name[100];
 	char a, b;
@@ -199,9 +201,10 @@ int main(int argc, TCHAR* argv[])
 	}
 	else if (buf[0] == 'p')
 	{
-		FILE *fp = fopen("pos.txt", "rt");
-		showLabels(fp, CV_RGB(255, 0, 0), 0, 0);
-		fclose(fp);
+		//FILE *fp = fopen("pos.txt", "rt");
+		//showLabels(fp, CV_RGB(255, 0, 0), 0, 0);
+		//fclose(fp);
+		labelEidt("pos.txt");
 		return 0;
 	}
 	else if (buf[0] == 'n')
