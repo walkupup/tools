@@ -72,12 +72,6 @@ void labelEidt(string fileName)
 		Mat orgImg = img.clone();
 
 		showRois(img, curLabel.name, curLabel.rois, color, color1);
-
-		//for (unsigned int i = 0; i < labels[j].rois.size(); i++)
-		//	rectangle(img, labels[j].rois[i], color, 1, 8, 0);
-		//if (labels[j].rois.size() > 0)// 最后一个框颜色区别
-		//	rectangle(img, labels[j].rois[labels[j].rois.size() - 1], color1, 1, 8, 0); 
-		//putText(img, labels[j].name, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
 		imshow("pos", img);
 
 		// 处理按键

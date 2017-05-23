@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleApplication1", "ConsoleApplication1.vcxproj", "{C5A63CF9-9180-439F-B31E-EB6DCC557EFA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B554EAD1-8049-4C5D-B397-1F4581DD73F4} = {B554EAD1-8049-4C5D-B397-1F4581DD73F4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyLib", "MyLib\MyLib.vcxproj", "{B554EAD1-8049-4C5D-B397-1F4581DD73F4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5A63CF9-9180-439F-B31E-EB6DCC557EFA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C5A63CF9-9180-439F-B31E-EB6DCC557EFA}.Debug|Win32.Build.0 = Debug|Win32
+		{C5A63CF9-9180-439F-B31E-EB6DCC557EFA}.Release|Win32.ActiveCfg = Release|Win32
+		{C5A63CF9-9180-439F-B31E-EB6DCC557EFA}.Release|Win32.Build.0 = Release|Win32
+		{B554EAD1-8049-4C5D-B397-1F4581DD73F4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B554EAD1-8049-4C5D-B397-1F4581DD73F4}.Debug|Win32.Build.0 = Debug|Win32
+		{B554EAD1-8049-4C5D-B397-1F4581DD73F4}.Release|Win32.ActiveCfg = Release|Win32
+		{B554EAD1-8049-4C5D-B397-1F4581DD73F4}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
