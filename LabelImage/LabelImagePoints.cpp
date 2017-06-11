@@ -17,8 +17,9 @@ static vector<Point2d> curPoint;
 static vector<vector<Point2d>> posBuf;
 static vector<Rect> negBuf;
 static int lastFlag = 1;	// 1为positive, 0位negtive
+static int numPoints = 4;
 
-void labelEidt(string fileName);
+void labelEditPoints(string fileName, int numPoints);
 
 // 恢复原图和现有的矩形框
 void restortImage(Mat& img, vector<vector<Point2d>>& rec1, vector<Rect>& rec2)
@@ -38,12 +39,24 @@ void restortImage(Mat& img, vector<vector<Point2d>>& rec1, vector<Rect>& rec2)
 
 
 // 记录多个Label
-void savePoints(FILE *fp, char *name, vector<Point2d> rec)
+void savePoints(FILE *fp, char *name, vector<vector<Point2d>> rec)
 {
-	int i;
-	fprintf(fp, "%s %d", name, rec.size());
-	for (i = 0; i < rec.size(); i++)
-		fprintf(fp, " %d %d", rec[i].x, rec[i].y);
+	int n = 0;
+	for (int i = 0; i < rec.size(); i++)
+	{
+		if (rec[i][0].x != 0 && rec[i][0].y != 0)
+			n++;
+		else
+			break;
+	}
+	fprintf(fp, "%s %d", name, n);
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < rec[i].size(); j++)
+		{
+			fprintf(fp, " %d %d", (int)rec[i][j].x, (int)rec[i][j].y);
+		}
+	}
 	fprintf(fp, "\n");
 	return;
 }
@@ -83,7 +96,7 @@ static void onMouse(int event, int x, int y, int, void*)
 		labeling = 1;
 		posBuf[count_][num] = Point2d(x, y);
 		num++;
-		if (num > 3)
+		if (num > numPoints - 1)
 		{
 			num = 0;
 			count_++;
@@ -154,9 +167,11 @@ int main(int argc, TCHAR* argv[])
 	int padZero = 0;	// 文件名如果需补零，扩展为多少个字符
 	int i;
 
-	printf("图像标注工具，请输入选项：\n\
+	printf("关键点标注工具，请输入选项：\n\
 按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
 	scanf("%s", buf);
+	printf("每个目标几个点：");
+	scanf("%d", &numPoints);
 
 	if (buf[0] == 's')
 	{
@@ -171,7 +186,7 @@ int main(int argc, TCHAR* argv[])
 		//FILE *fp = fopen("pos.txt", "rt");
 		//showLabels(fp, CV_RGB(255, 0, 0), 0, 0);
 		//fclose(fp);
-		labelEidt("pos.txt");
+		labelEditPoints("pos.txt", numPoints);
 		return 0;
 	}
 	else if (buf[0] == 'n')
@@ -185,7 +200,7 @@ int main(int argc, TCHAR* argv[])
 	else
 		return 0;
 
-	printf("\n标注工具。鼠标左键拖动标注正样本，右键拖动标注负样本，一幅图可标注多个目标。\n \
+//	printf("\n标注工具。鼠标左键拖动标注正样本，右键拖动标注负样本，一幅图可标注多个目标。\n \
 快捷键：按Enter标注整张图为负样本，按空格标注下一张图，按Backspace删除上一个标注。\n");
 
 	if (buf[0] == 's') // 按帧号标注
@@ -264,10 +279,10 @@ int main(int argc, TCHAR* argv[])
 	fclose(fneg);
 	curNum = startNum;
 
-	posBuf.resize(20);
+	posBuf.resize(100);
 	for (int i = 0; i < posBuf.size(); i++)
 	{
-		posBuf[i].resize(4);
+		posBuf[i].resize(numPoints);
 	}
 	while (1)
 	{
@@ -296,6 +311,7 @@ int main(int argc, TCHAR* argv[])
 				break;
 		}
 
+		count_ = 0;
 		printf("%s\n", fileName);
 		img = imread(fileName, CV_LOAD_IMAGE_COLOR);
 		if (img.data == NULL)
@@ -320,7 +336,7 @@ int main(int argc, TCHAR* argv[])
 			char c = cvWaitKey(0);
 			if (c == ' ')	// 空格
 			{
-				//savePoints(fpos, fileName, posBuf);
+				savePoints(fpos, fileName, posBuf);
 				break;
 			}
 			else if (c == 8)	// press backspace

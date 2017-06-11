@@ -187,7 +187,7 @@ int main1(int argc, TCHAR* argv[])
 	int padZero = 0;	// 文件名如果需补零，扩展为多少个字符
 	int i;
 
-	printf("图像标注工具，请输入选项：\n\
+	printf("图像矩形框标注工具，请输入选项：\n\
 按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
 	scanf("%s", buf);
 

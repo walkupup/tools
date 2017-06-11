@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LabelEdit.cpp" />
+    <ClCompile Include="LabelEditPoints.cpp" />
     <ClCompile Include="LabelImage.cpp" />
     <ClCompile Include="LabelImagePoints.cpp" />
   </ItemGroup>
