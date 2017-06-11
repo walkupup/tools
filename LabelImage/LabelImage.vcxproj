@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="LabelEdit.cpp" />
     <ClCompile Include="LabelImage.cpp" />
+    <ClCompile Include="LabelImagePoints.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

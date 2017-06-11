@@ -8,50 +8,47 @@
 using namespace std;
 using namespace cv;
 
-Mat img, backupImg;
-Point startPt, endPt;
+static Mat img, backupImg;
+static Point startPt, endPt;
 static int labeling = 0;
-vector<Rect> posBuf;
-vector<Rect> negBuf;
-int lastFlag = 1;	// 1为positive, 0位negtive
+static int num = 0;
+static int count_ = 0; // 
+static vector<Point2d> curPoint;
+static vector<vector<Point2d>> posBuf;
+static vector<Rect> negBuf;
+static int lastFlag = 1;	// 1为positive, 0位negtive
 
 void labelEidt(string fileName);
 
 // 恢复原图和现有的矩形框
-void restortImage(Mat& img, vector<Rect>& rec1, vector<Rect>& rec2)
+void restortImage(Mat& img, vector<vector<Point2d>>& rec1, vector<Rect>& rec2)
 {
 	int i;
 	backupImg.copyTo(img);
-	for (i = 0; i < rec1.size(); i++)
-		rectangle(img, rec1[i], CV_RGB(255, 0, 0), 1, 8, 0);
+	for (int i = 0; i < rec1.size(); i++)
+	{
+		for (int j = 0; j < rec1[i].size(); j++)
+			circle(img, rec1[i][j], 2, Scalar(0, 0, 255), -1);
+	}
 	for (i = 0; i < rec2.size(); i++)
 		rectangle(img, rec2[i], CV_RGB(0, 255, 0), 1, 8, 0);
 
 	return;
 }
 
-// 记录一个Label
-void recordOneLabel(FILE *fp, char *name, Point pt1, Point pt2)
-{
-	int left, top, width, height;
-	left = (pt1.x < pt2.x ? pt1.x : pt2.x);
-	top = (pt1.y < pt2.y ? pt1.y : pt2.y);
-	width = abs(pt1.x - pt2.x) + 1;
-	height = abs(pt1.y - pt2.y) + 1;
-	fprintf(fp, "%s %d %d %d %d %d\n", name, 1, left, top, width, height);
-	return;
-}
 
 // 记录多个Label
-void recordLabels(FILE *fp, char *name, vector<Rect> rec)
+void savePoints(FILE *fp, char *name, vector<Point2d> rec)
 {
 	int i;
+	fprintf(fp, "%s %d", name, rec.size());
 	for (i = 0; i < rec.size(); i++)
-		fprintf(fp, "%s %d %d %d %d %d\n", name, 1, rec[i].x, rec[i].y, rec[i].width, rec[i].height);
+		fprintf(fp, " %d %d", rec[i].x, rec[i].y);
+	fprintf(fp, "\n");
 	return;
 }
 
-void saveLabelImage(char *name, vector<Rect>& rec)
+static void saveLabelImage(char *name, vector<Rect>& rec)
 {
 	int i;
 	static int num = 0;
@@ -79,60 +76,30 @@ static void onMouse(int event, int x, int y, int, void*)
 	switch (event)
 	{
 	case CV_EVENT_LBUTTONDOWN:
-		labeling = 1;
-		startPt.x = x;
-		startPt.y = y;
 		break;
 	case CV_EVENT_RBUTTONDOWN:
-		labeling = 2;
-		startPt.x = x;
-		startPt.y = y;
 		break;
 	case CV_EVENT_LBUTTONUP:
-		labeling = 0;
-		endPt.x = x;
-		endPt.y = y;
-		if (abs(startPt.x - endPt.x) < 5 || abs(startPt.y - endPt.y) < 5)
-			break;
+		labeling = 1;
+		posBuf[count_][num] = Point2d(x, y);
+		num++;
+		if (num > 3)
 		{
-			Rect rec(startPt, endPt);
-			posBuf.push_back(rec);
-			lastFlag = 1;
+			num = 0;
+			count_++;
 		}
 		restortImage(img, posBuf, negBuf);
+		imshow("image", img);
 		break;
 	case CV_EVENT_RBUTTONUP:
-		labeling = 0;
-		endPt.x = x;
-		endPt.y = y;
-		if (abs(startPt.x - endPt.x) < 30 || abs(startPt.y - endPt.y) < 30)
-			break;
-		{
-			Rect rec(startPt, endPt);
-			negBuf.push_back(rec);
-			lastFlag = 0;
-		}
-		restortImage(img, posBuf, negBuf);
 		break;
 	case CV_EVENT_MOUSEMOVE:
-		if (labeling)
-		{
-			restortImage(img, posBuf, negBuf);
-			endPt.x = x;
-			endPt.y = y;
-			if (labeling == 1)
-				rectangle(img, startPt, endPt, CV_RGB(255, 0, 0), 1, 8, 0);
-			else
-				rectangle(img, startPt, endPt, CV_RGB(0, 255, 0), 1, 8, 0);
-			imshow("image", img);
-			//waitKey(1);
-		}
 		break;
 	}
 
 }
 
-void showLabels(FILE *fp, CvScalar& color, int save, int ms)
+static void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 {
 	char buf[100], name[100], name1[100];
 	int a;
@@ -174,7 +141,7 @@ void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 	}
 }
 
-int main1(int argc, TCHAR* argv[])
+int main(int argc, TCHAR* argv[])
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind = NULL;
@@ -297,6 +264,11 @@ int main1(int argc, TCHAR* argv[])
 	fclose(fneg);
 	curNum = startNum;
 
+	posBuf.resize(20);
+	for (int i = 0; i < posBuf.size(); i++)
+	{
+		posBuf[i].resize(4);
+	}
 	while (1)
 	{
 		fopen_s(&fpos, "pos.txt", "a+");
@@ -333,7 +305,14 @@ int main1(int argc, TCHAR* argv[])
 		}
 		putText(img, fileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
 		img.copyTo(backupImg);
-		posBuf.clear();
+		for (int i = 0; i < posBuf.size(); i++)
+		{
+			for (int j = 0; j < posBuf[i].size(); j++)
+			{
+				posBuf[i][j].x = 0;
+				posBuf[i][j].y = 0;
+			}
+		}
 		negBuf.clear();
 		imshow("image", img);
 		while (1)
@@ -341,16 +320,20 @@ int main1(int argc, TCHAR* argv[])
 			char c = cvWaitKey(0);
 			if (c == ' ')	// 空格
 			{
-				recordLabels(fpos, fileName, posBuf);
-				recordLabels(fneg, fileName, negBuf);
+				//savePoints(fpos, fileName, posBuf);
 				break;
 			}
 			else if (c == 8)	// press backspace
 			{
 				if (lastFlag)
 				{
-					if (posBuf.size() > 0)
-						posBuf.pop_back();
+					for (int i = 0; i < posBuf[count_].size(); i++)
+					{
+						posBuf[count_][i].x = 0;
+						posBuf[count_][i].y = 0;
+					}
+					if (count_ > 0)
+						count_--;
 				}
 				else
 				{
@@ -367,7 +350,7 @@ int main1(int argc, TCHAR* argv[])
 					negBuf.clear();
 					negBuf.push_back(rec);
 				}
-				recordLabels(fneg, fileName, negBuf);
+				//savePoints(fneg, fileName, negBuf);
 				break;
 			}
 			//else
