@@ -341,15 +341,14 @@ int main(int argc, TCHAR* argv[])
 			}
 			else if (c == 8)	// press backspace
 			{
-				if (lastFlag)
+				if (lastFlag && count_ > 0)
 				{
-					for (int i = 0; i < posBuf[count_].size(); i++)
+					for (int i = 0; i < posBuf[count_ - 1].size(); i++)
 					{
-						posBuf[count_][i].x = 0;
-						posBuf[count_][i].y = 0;
+						posBuf[count_ - 1][i].x = 0;
+						posBuf[count_ - 1][i].y = 0;
 					}
-					if (count_ > 0)
-						count_--;
+					count_--;
 				}
 				else
 				{
