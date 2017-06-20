@@ -8,12 +8,15 @@
 using namespace std;
 using namespace cv;
 
+#define Clip3(min,max,val) (((val)<(min))?(min):(((val)>(max))?(max):(val)))
+
 Mat img, backupImg;
 Point startPt, endPt;
 static int labeling = 0;
 vector<Rect> posBuf;
 vector<Rect> negBuf;
 int lastFlag = 1;	// 1为positive, 0位negtive
+static char square = 'n';
 
 void labelEidt(string fileName);
 
@@ -73,6 +76,23 @@ void saveLabelImage(char *name, vector<Rect>& rec)
 	return;
 }
 
+void makeSquareBox(cv::Point startPt, cv::Point &endPt)
+{
+	int len1 = endPt.x - startPt.x;
+	int len2 = endPt.y - startPt.y;
+	if (abs(len1) > abs(len2))
+	{
+		endPt.x = startPt.x + len2;
+		endPt.y = startPt.y + len2;
+	}
+	else
+	{
+		endPt.x = startPt.x + len1;
+		endPt.y = startPt.y + len1;
+	}
+	return;
+}
+
 // 鼠标回调函数
 static void onMouse(int event, int x, int y, int, void*)
 {
@@ -90,8 +110,10 @@ static void onMouse(int event, int x, int y, int, void*)
 		break;
 	case CV_EVENT_LBUTTONUP:
 		labeling = 0;
-		endPt.x = x;
-		endPt.y = y;
+		endPt.x = Clip3(0, img.cols - 1, x);
+		endPt.y = Clip3(0, img.rows - 1, y);
+		if (square == 'y')
+			makeSquareBox(startPt, endPt);
 		if (abs(startPt.x - endPt.x) < 5 || abs(startPt.y - endPt.y) < 5)
 			break;
 		{
@@ -103,8 +125,10 @@ static void onMouse(int event, int x, int y, int, void*)
 		break;
 	case CV_EVENT_RBUTTONUP:
 		labeling = 0;
-		endPt.x = x;
-		endPt.y = y;
+		endPt.x = Clip3(0, img.cols - 1, x);
+		endPt.y = Clip3(0, img.rows - 1, y);
+		if (square == 'y')
+			makeSquareBox(startPt, endPt);
 		if (abs(startPt.x - endPt.x) < 30 || abs(startPt.y - endPt.y) < 30)
 			break;
 		{
@@ -118,8 +142,10 @@ static void onMouse(int event, int x, int y, int, void*)
 		if (labeling)
 		{
 			restortImage(img, posBuf, negBuf);
-			endPt.x = x;
-			endPt.y = y;
+			endPt.x = Clip3(0, img.cols - 1, x);
+			endPt.y = Clip3(0, img.rows - 1, y);
+			if (square == 'y')
+				makeSquareBox(startPt, endPt);
 			if (labeling == 1)
 				rectangle(img, startPt, endPt, CV_RGB(255, 0, 0), 1, 8, 0);
 			else
@@ -190,6 +216,9 @@ int main1(int argc, TCHAR* argv[])
 	printf("图像矩形框标注工具，请输入选项：\n\
 按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
 	scanf("%s", buf);
+	fflush(stdin);
+	printf("标注正方形(y/n): ");
+	scanf("%c", &square);
 
 	if (buf[0] == 's')
 	{

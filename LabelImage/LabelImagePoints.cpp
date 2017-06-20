@@ -4,38 +4,25 @@
 #include "tchar.h"
 #include "opencv2/opencv.hpp"
 #include "Windows.h"
+#include "ImageInfo.h"
 
 using namespace std;
 using namespace cv;
 
-static Mat img, backupImg;
-static Point startPt, endPt;
-static int labeling = 0;
-static int num = 0;
-static int count_ = 0; // 
-static vector<Point2d> curPoint;
-static vector<vector<Point2d>> posBuf;
-static vector<Rect> negBuf;
-static int lastFlag = 1;	// 1为positive, 0位negtive
-static int numPoints = 4;
+//static Mat img, backupImg;
+//static Point startPt, endPt;
+//static int labeling = 0;
+//static int num = 0;
+//static int count_ = 0; // 
+//static vector<Point2d> curPoint;
+//static vector<vector<Point2d>> posBuf;
+//static vector<Rect> negBuf;
+//static int lastFlag = 1;	// 1为positive, 0位negtive
+//static int numPoints = 4;
+
+static ImageInfo *ii;
 
 void labelEditPoints(string fileName, int numPoints);
-
-// 恢复原图和现有的矩形框
-void restortImage(Mat& img, vector<vector<Point2d>>& rec1, vector<Rect>& rec2)
-{
-	int i;
-	backupImg.copyTo(img);
-	for (int i = 0; i < rec1.size(); i++)
-	{
-		for (int j = 0; j < rec1[i].size(); j++)
-			circle(img, rec1[i][j], 2, Scalar(0, 0, 255), -1);
-	}
-	for (i = 0; i < rec2.size(); i++)
-		rectangle(img, rec2[i], CV_RGB(0, 255, 0), 1, 8, 0);
-
-	return;
-}
 
 
 // 记录多个Label
@@ -93,16 +80,8 @@ static void onMouse(int event, int x, int y, int, void*)
 	case CV_EVENT_RBUTTONDOWN:
 		break;
 	case CV_EVENT_LBUTTONUP:
-		labeling = 1;
-		posBuf[count_][num] = Point2d(x, y);
-		num++;
-		if (num > numPoints - 1)
-		{
-			num = 0;
-			count_++;
-		}
-		restortImage(img, posBuf, negBuf);
-		imshow("image", img);
+		ii->setOnePoint(Point2d(x, y));
+		imshow("image", ii->getShowImage());
 		break;
 	case CV_EVENT_RBUTTONUP:
 		break;
@@ -170,8 +149,8 @@ int main(int argc, TCHAR* argv[])
 	printf("关键点标注工具，请输入选项：\n\
 按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
 	scanf("%s", buf);
-	printf("每个目标几个点：");
-	scanf("%d", &numPoints);
+	//printf("每个目标几个点：");
+	//scanf("%d", &numPoints);
 
 	if (buf[0] == 's')
 	{
@@ -186,7 +165,7 @@ int main(int argc, TCHAR* argv[])
 		//FILE *fp = fopen("pos.txt", "rt");
 		//showLabels(fp, CV_RGB(255, 0, 0), 0, 0);
 		//fclose(fp);
-		labelEditPoints("pos.txt", numPoints);
+		labelEditPoints("pos.txt", 5);
 		return 0;
 	}
 	else if (buf[0] == 'n')
@@ -273,22 +252,12 @@ int main(int argc, TCHAR* argv[])
 
 	namedWindow("image");// 0);
 	setMouseCallback("image", onMouse, 0);
-	fopen_s(&fpos, "pos.txt", "wt");
-	fclose(fpos);
-	fopen_s(&fneg, "neg.txt", "wt");
-	fclose(fneg);
 	curNum = startNum;
 
-	posBuf.resize(100);
-	for (int i = 0; i < posBuf.size(); i++)
-	{
-		posBuf[i].resize(numPoints);
-	}
+	ii = new ImageInfo(5, VEHICLE_OBJ, "pos.txt");
+
 	while (1)
 	{
-		fopen_s(&fpos, "pos.txt", "a+");
-		fopen_s(&fneg, "neg.txt", "a+");
-
 		if (buf[0] == 's')
 		{
 			sprintf(midName, "%d", curNum);
@@ -311,72 +280,42 @@ int main(int argc, TCHAR* argv[])
 				break;
 		}
 
-		count_ = 0;
 		printf("%s\n", fileName);
-		img = imread(fileName, CV_LOAD_IMAGE_COLOR);
-		if (img.data == NULL)
+		if (ii->newImage(fileName) < 0)
 		{
 			printf("文件 %s 丢失, 或标注完成\n", fileName);
 			continue;
 		}
-		putText(img, fileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
-		img.copyTo(backupImg);
-		for (int i = 0; i < posBuf.size(); i++)
-		{
-			for (int j = 0; j < posBuf[i].size(); j++)
-			{
-				posBuf[i][j].x = 0;
-				posBuf[i][j].y = 0;
-			}
-		}
-		negBuf.clear();
-		imshow("image", img);
+		imshow("image", ii->getShowImage());
 		while (1)
 		{
 			char c = cvWaitKey(0);
 			if (c == ' ')	// 空格
 			{
-				savePoints(fpos, fileName, posBuf);
+				ii->savePoints();
 				break;
 			}
 			else if (c == 8)	// press backspace
 			{
-				if (lastFlag && count_ > 0)
-				{
-					for (int i = 0; i < posBuf[count_ - 1].size(); i++)
-					{
-						posBuf[count_ - 1][i].x = 0;
-						posBuf[count_ - 1][i].y = 0;
-					}
-					count_--;
-				}
-				else
-				{
-					if (negBuf.size() > 0)
-						negBuf.pop_back();
-				}
-				restortImage(img, posBuf, negBuf);
-				imshow("image", img);
+				ii->removeOnePoint();
+				imshow("image", ii->getShowImage());
 			}
 			else if (c == 13) // press enter
 			{
-				{
-					Rect rec(0, 0, img.cols, img.rows);
-					negBuf.clear();
-					negBuf.push_back(rec);
-				}
+				//{
+				//	Rect rec(0, 0, img.cols, img.rows);
+				//	negBuf.clear();
+				//	negBuf.push_back(rec);
+				//}
 				//savePoints(fneg, fileName, negBuf);
 				break;
 			}
-			//else
-			//	printf("%d", c);
 		}
-		fclose(fpos);
-		fclose(fneg);
 		curNum++;
 
 	} //while (FindNextFile(hFind, &FindFileData));
 
+	delete ii;
 	return 0;
 }
 

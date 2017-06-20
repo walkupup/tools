@@ -147,10 +147,14 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ImageInfo.cpp" />
     <ClCompile Include="LabelEdit.cpp" />
     <ClCompile Include="LabelEditPoints.cpp" />
     <ClCompile Include="LabelImage.cpp" />
     <ClCompile Include="LabelImagePoints.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ImageInfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
