@@ -9,20 +9,10 @@
 using namespace std;
 using namespace cv;
 
-//static Mat img, backupImg;
-//static Point startPt, endPt;
-//static int labeling = 0;
-//static int num = 0;
-//static int count_ = 0; // 
-//static vector<Point2d> curPoint;
-//static vector<vector<Point2d>> posBuf;
-//static vector<Rect> negBuf;
-//static int lastFlag = 1;	// 1为positive, 0位negtive
-//static int numPoints = 4;
-
 static ImageInfo *ii;
 
 void labelEditPoints(string fileName, int numPoints);
+void labelEditVessel(string fileName);
 
 
 // 记录多个Label
@@ -166,6 +156,7 @@ int main(int argc, TCHAR* argv[])
 		//showLabels(fp, CV_RGB(255, 0, 0), 0, 0);
 		//fclose(fp);
 		labelEditPoints("pos.txt", 5);
+		labelEditVessel("label.txt");
 		return 0;
 	}
 	else if (buf[0] == 'n')
@@ -254,7 +245,7 @@ int main(int argc, TCHAR* argv[])
 	setMouseCallback("image", onMouse, 0);
 	curNum = startNum;
 
-	ii = new ImageInfo(5, VEHICLE_OBJ, "pos.txt");
+	ii = new ImageInfo(6, VEHICLE_OBJ, "pos.txt");
 
 	while (1)
 	{

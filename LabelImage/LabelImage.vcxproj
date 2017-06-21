@@ -150,6 +150,7 @@
     <ClCompile Include="ImageInfo.cpp" />
     <ClCompile Include="LabelEdit.cpp" />
     <ClCompile Include="LabelEditPoints.cpp" />
+    <ClCompile Include="LabelEditVessel.cpp" />
     <ClCompile Include="LabelImage.cpp" />
     <ClCompile Include="LabelImagePoints.cpp" />
   </ItemGroup>

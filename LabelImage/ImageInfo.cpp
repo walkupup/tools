@@ -48,11 +48,11 @@ int ImageInfo::newImage(std::string name)
 
 vector<Rect> ImageInfo::vehiclePoint2Rect(vector<Point2d> pts)
 {
-	// иообвСсрт╤.
+	// иообвСсрт╤╤╔.
 	vector<Rect> vr;
 	Point pt1, pt2;
 	pt1.x = pts[4].x;
-	pt1.y = pts[0].y;
+	pt1.y = pts[5].y;
 	pt2.y = pts[1].y;
 	if (pts[4].x < (pts[2].x + pts[3].x) / 2) // ф╚вС
 		pt2.x = pts[3].x;

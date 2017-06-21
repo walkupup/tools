@@ -25,6 +25,31 @@ void showRois(cv::Mat img, string info, vector<cv::Rect> rois, cv::Scalar color,
 	return;
 }
 
+vector<ImageLabel> readRectLable(std::string fileName)
+{
+	// 读取所有记录.
+	vector<ImageLabel> labels;
+	std::ifstream infile(fileName);
+	std::string buf;
+	int n;
+	while (getline(infile, buf))
+	{
+		ImageLabel item;
+		Rect rec;
+		istringstream ss;
+		ss.str(buf);
+		ss >> item.name;
+		ss >> n;
+		for (int i = 0; i < n; i++)
+		{
+			ss >> rec.x >> rec.y >> rec.width >> rec.height;
+			item.rois.push_back(rec);
+		}
+		labels.push_back(item);
+	}
+	return labels;
+}
+
 void labelEidt(string fileName)
 {
 	vector<ImageLabel> labels, outLabels;
