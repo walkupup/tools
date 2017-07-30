@@ -151,12 +151,26 @@ void ImageInfo::savePoints()
 	//		break;
 	//}
 	n = count_;
-	fprintf(fpos, "%s %d", imageFileName, n * 2);
-	for (int i = 0; i < n; i++)
+	if (objName == VEHICLE_OBJ)
 	{
-		vector<Rect> vr =  vehiclePoint2Rect(posBuf[i]);
-		fprintf(fpos, " %d %d %d %d", (int)vr[0].x, (int)vr[0].y, (int)vr[0].width, (int)vr[0].height);
-		fprintf(fpos, " %d %d %d %d", (int)vr[1].x, (int)vr[1].y, (int)vr[1].width, (int)vr[1].height);
+		fprintf(fpos, "%s %d", imageFileName, n * 2);
+		for (int i = 0; i < n; i++)
+		{
+			vector<Rect> vr = vehiclePoint2Rect(posBuf[i]);
+			fprintf(fpos, " %d %d %d %d", (int)vr[0].x, (int)vr[0].y, (int)vr[0].width, (int)vr[0].height);
+			fprintf(fpos, " %d %d %d %d", (int)vr[1].x, (int)vr[1].y, (int)vr[1].width, (int)vr[1].height);
+		}
+	}
+	else
+	{
+		fprintf(fpos, "%s %d", imageFileName, n);
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < numPoints; j++)
+			{
+				fprintf(fpos, " %d %d", (int)posBuf[i][j].x, (int)posBuf[i][j].y);
+			}
+		}
 	}
 	fprintf(fpos, "\n");
 	fclose(fpos);
