@@ -123,7 +123,7 @@ static void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 	}
 }
 
-int main(int argc, TCHAR* argv[])
+int main1(int argc, TCHAR* argv[])
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind = NULL;
@@ -135,12 +135,14 @@ int main(int argc, TCHAR* argv[])
 	char preName[20], midName[20], extName[10]; // 前缀名，中间名（编号），扩展名
 	int padZero = 0;	// 文件名如果需补零，扩展为多少个字符
 	int i;
+	int numPoints;
 
 	printf("关键点标注工具，请输入选项：\n\
 按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
 	scanf("%s", buf);
-	//printf("每个目标几个点：");
-	//scanf("%d", &numPoints);
+	fflush(stdin);
+	printf("每个目标几个点：");
+	scanf("%d", &numPoints);
 
 	if (buf[0] == 's')
 	{
@@ -156,7 +158,7 @@ int main(int argc, TCHAR* argv[])
 		//showLabels(fp, CV_RGB(255, 0, 0), 0, 0);
 		//fclose(fp);
 		labelEditPoints("pos.txt", 5);
-		labelEditVessel("label.txt");
+		//labelEditVessel("label.txt");
 		return 0;
 	}
 	else if (buf[0] == 'n')
@@ -245,7 +247,7 @@ int main(int argc, TCHAR* argv[])
 	setMouseCallback("image", onMouse, 0);
 	curNum = startNum;
 
-	ii = new ImageInfo(6, VEHICLE_OBJ, "pos.txt");
+	ii = new ImageInfo(numPoints, RECT_OBJ, "pos.txt");
 
 	while (1)
 	{

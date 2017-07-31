@@ -6,7 +6,7 @@ using namespace cv;
 enum ObjectName
 {
 	RECT_OBJ = 0,
-	VEHICLE_OBJ = 1,	// vehicle，上下左右远.
+	VEHICLE_OBJ = 1,	// vehicle，上下左右远顶.
 	PLANE_OBJ = 2		// plane
 };
 

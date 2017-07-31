@@ -17,13 +17,19 @@ public:
 // 在图像img上画点，显示信息info
 void showPoints(cv::Mat img, string info, vector<vector<cv::Point2d>> points, cv::Scalar color, cv::Scalar color1)
 {
-	for (int i = 0; i < points.size(); i++)
+	for (int i = 0; i < points.size() - 1; i++)
 	{
 		for (int j = 0; j < points[i].size(); j++)
 		{
 			circle(img, points[i][j], 2, color, -1);
 		}
 	}
+	int i = points.size() - 1;
+	for (int j = 0; j < points[i].size(); j++)
+	{
+		circle(img, points[i][j], 2, color1, -1);
+	}
+
 	putText(img, info, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
 	return;
 }

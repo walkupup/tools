@@ -25,6 +25,7 @@ void showRois(cv::Mat img, string info, vector<cv::Rect> rois, cv::Scalar color,
 	return;
 }
 
+// 每行多个标记.
 vector<ImageLabel> readRectLable(std::string fileName)
 {
 	// 读取所有记录.
@@ -50,19 +51,16 @@ vector<ImageLabel> readRectLable(std::string fileName)
 	return labels;
 }
 
-void labelEidt(string fileName)
+// 每行一个标记.
+vector<ImageLabel> readRectLableOneSampleOneLine(std::string fileName)
 {
-	vector<ImageLabel> labels, outLabels;
-	string imageName;
-	int count;
-	int x, y, w, h;
-	cv::Scalar color(255, 0, 0);
-	cv::Scalar color1(0, 0, 255);
-
 	// 读取所有记录
+	vector<ImageLabel> labels;
 	std::ifstream infile(fileName);
 	ImageLabel item;
-	while (infile >> imageName >> count >> x >> y >> w >> h) 
+	string imageName;
+	int x, y, w, h;
+	while (infile >> imageName >> x >> y >> w >> h)
 	{
 		if (item.rois.size() == 0)
 		{
@@ -86,6 +84,19 @@ void labelEidt(string fileName)
 	}
 	if (item.rois.size() > 0) // 最后一个记录
 		labels.push_back(item);
+	return labels;
+}
+
+void labelEidt(string fileName)
+{
+	vector<ImageLabel> labels, outLabels;
+	string imageName;
+	cv::Scalar color(255, 0, 0);
+	cv::Scalar color1(0, 0, 255);
+	string outFileName = fileName;
+	outFileName.insert(outFileName.length() - 4, "-out");
+
+	labels = readRectLableOneSampleOneLine(fileName);
 
 	// 显示每一条记录
 	for (unsigned int j = 0; j < labels.size(); j++)
@@ -125,19 +136,15 @@ void labelEidt(string fileName)
 		}
 		if (curLabel.rois.size() > 0)
 			outLabels.push_back(curLabel);
-	}
-
-	// 输出
-	string outFileName = fileName;
-	outFileName.insert(outFileName.length() - 4, "-out");
-	std::ofstream outfile(outFileName);
-	for (unsigned int i = 0; i < outLabels.size(); i++)
-	{
+		// 输出
+		size_t i = outLabels.size() - 1;
+		std::ofstream outfile(outFileName, ios::app);
 		for (unsigned int j = 0; j < outLabels[i].rois.size(); j++)
-			outfile << outLabels[i].name << " " << 1 
+			outfile << outLabels[i].name << " " << 1
 			<< " " << outLabels[i].rois[j].x
 			<< " " << outLabels[i].rois[j].y
 			<< " " << outLabels[i].rois[j].width
 			<< " " << outLabels[i].rois[j].height << endl;
 	}
+
 }
