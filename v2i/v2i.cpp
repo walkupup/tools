@@ -47,11 +47,14 @@ int main(int argc, char **argv)
 		for (i = 0; i < frameCount; i++)
 		{
 			v1.read(img);
-			sprintf_s(name, 200, "img/%s%08d.%s", preName, i, extName);
-			printf("writing frame %d / %d\n", i, frameCount);
-			imshow("video", img);
-			waitKey(1);
-			imwrite(name, img);
+			if (i % 20 == 0)
+			{
+				sprintf_s(name, 200, "img/%s%08d.%s", preName, i, extName);
+				printf("writing frame %d / %d\n", i, frameCount);
+				imshow("video", img);
+				waitKey(1);
+				imwrite(name, img);
+			}
 		}
 	}
 
