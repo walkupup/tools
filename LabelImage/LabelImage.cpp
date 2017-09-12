@@ -10,9 +10,9 @@ using namespace cv;
 
 #define Clip3(min,max,val) (((val)<(min))?(min):(((val)>(max))?(max):(val)))
 
-Mat img, backupImg;
+Mat gImg;// , backupImg;
 Point startPt, endPt;
-static int labeling = 0;
+int labeling = 0;
 vector<Rect> posBuf;
 vector<Rect> negBuf;
 int lastFlag = 1;	// 1为positive, 0位negtive
@@ -24,7 +24,7 @@ void labelEidt(string fileName);
 void restortImage(Mat& img, vector<Rect>& rec1, vector<Rect>& rec2)
 {
 	int i;
-	backupImg.copyTo(img);
+	//backupImg.copyTo(img);
 	for (i = 0; i < rec1.size(); i++)
 		rectangle(img, rec1[i], CV_RGB(255, 0, 0), 1, 8, 0);
 	for (i = 0; i < rec2.size(); i++)
@@ -46,7 +46,7 @@ void recordOneLabel(FILE *fp, char *name, Point pt1, Point pt2)
 }
 
 // 记录多个Label
-void recordLabels(FILE *fp, char *name, vector<Rect> rec)
+void recordLabelsOne(FILE *fp, char *name, vector<Rect> rec)
 {
 	int i;
 	for (i = 0; i < rec.size(); i++)
@@ -54,6 +54,16 @@ void recordLabels(FILE *fp, char *name, vector<Rect> rec)
 	return;
 }
 
+// 记录多个Label
+void recordLabels(FILE *fp, char *name, vector<Rect> rec)
+{
+	int i;
+	fprintf(fp, "%s %d", name, rec.size());
+	for (i = 0; i < rec.size(); i++)
+		fprintf(fp, " %d %d %d %d", rec[i].x, rec[i].y, rec[i].width, rec[i].height);
+	fprintf(fp, "\n");
+	return;
+}
 void saveLabelImage(char *name, vector<Rect>& rec)
 {
 	int i;
@@ -94,8 +104,11 @@ void makeSquareBox(cv::Point startPt, cv::Point &endPt)
 }
 
 // 鼠标回调函数
-static void onMouse(int event, int x, int y, int, void*)
+void onMouse(int event, int x, int y, int, void* __posBuf)
 {
+	cv::Mat *_img = &gImg;
+	cv::Mat showImg;
+	std::vector<cv::Rect> *_posBuf = (std::vector<cv::Rect> *)__posBuf;
 	switch (event)
 	{
 	case CV_EVENT_LBUTTONDOWN:
@@ -110,23 +123,24 @@ static void onMouse(int event, int x, int y, int, void*)
 		break;
 	case CV_EVENT_LBUTTONUP:
 		labeling = 0;
-		endPt.x = Clip3(0, img.cols - 1, x);
-		endPt.y = Clip3(0, img.rows - 1, y);
+		endPt.x = Clip3(0, _img->cols - 1, x);
+		endPt.y = Clip3(0, _img->rows - 1, y);
 		if (square == 'y')
 			makeSquareBox(startPt, endPt);
 		if (abs(startPt.x - endPt.x) < 5 || abs(startPt.y - endPt.y) < 5)
 			break;
 		{
 			Rect rec(startPt, endPt);
-			posBuf.push_back(rec);
+			_posBuf->push_back(rec);
 			lastFlag = 1;
 		}
-		restortImage(img, posBuf, negBuf);
+		_img->copyTo(showImg);
+		restortImage(showImg, *_posBuf, negBuf);
 		break;
 	case CV_EVENT_RBUTTONUP:
 		labeling = 0;
-		endPt.x = Clip3(0, img.cols - 1, x);
-		endPt.y = Clip3(0, img.rows - 1, y);
+		endPt.x = Clip3(0, _img->cols - 1, x);
+		endPt.y = Clip3(0, _img->rows - 1, y);
 		if (square == 'y')
 			makeSquareBox(startPt, endPt);
 		if (abs(startPt.x - endPt.x) < 30 || abs(startPt.y - endPt.y) < 30)
@@ -136,21 +150,23 @@ static void onMouse(int event, int x, int y, int, void*)
 			negBuf.push_back(rec);
 			lastFlag = 0;
 		}
-		restortImage(img, posBuf, negBuf);
+		_img->copyTo(showImg);
+		restortImage(showImg, *_posBuf, negBuf);
 		break;
 	case CV_EVENT_MOUSEMOVE:
 		if (labeling)
 		{
-			restortImage(img, posBuf, negBuf);
-			endPt.x = Clip3(0, img.cols - 1, x);
-			endPt.y = Clip3(0, img.rows - 1, y);
+			_img->copyTo(showImg);
+			restortImage(showImg, *_posBuf, negBuf);
+			endPt.x = Clip3(0, _img->cols - 1, x);
+			endPt.y = Clip3(0, _img->rows - 1, y);
 			if (square == 'y')
 				makeSquareBox(startPt, endPt);
 			if (labeling == 1)
-				rectangle(img, startPt, endPt, CV_RGB(255, 0, 0), 1, 8, 0);
+				rectangle(showImg, startPt, endPt, CV_RGB(255, 0, 0), 1, 8, 0);
 			else
-				rectangle(img, startPt, endPt, CV_RGB(0, 255, 0), 1, 8, 0);
-			imshow("image", img);
+				rectangle(showImg, startPt, endPt, CV_RGB(0, 255, 0), 1, 8, 0);
+			imshow("image", showImg);
 			//waitKey(1);
 		}
 		break;
@@ -200,7 +216,7 @@ void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 	}
 }
 
-int main1(int argc, TCHAR* argv[])
+int main(int argc, TCHAR* argv[])
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind = NULL;
@@ -214,7 +230,7 @@ int main1(int argc, TCHAR* argv[])
 	int i;
 
 	printf("图像矩形框标注工具，请输入选项：\n\
-按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
+按帧号标注 s:起始帧号, 任意顺序标注x, 查看/编辑正样本p, 查看负样本n ");
 	scanf("%s", buf);
 	fflush(stdin);
 	printf("标注正方形(y/n): ");
@@ -319,7 +335,6 @@ int main1(int argc, TCHAR* argv[])
 	}
 
 	namedWindow("image");// 0);
-	setMouseCallback("image", onMouse, 0);
 	fopen_s(&fpos, "pos.txt", "wt");
 	fclose(fpos);
 	fopen_s(&fneg, "neg.txt", "wt");
@@ -354,17 +369,18 @@ int main1(int argc, TCHAR* argv[])
 		}
 
 		printf("%s\n", fileName);
-		img = imread(fileName, CV_LOAD_IMAGE_COLOR);
-		if (img.data == NULL)
+		gImg = imread(fileName, CV_LOAD_IMAGE_COLOR);
+		if (gImg.data == NULL)
 		{
 			printf("文件 %s 丢失, 或标注完成\n", fileName);
 			continue;
 		}
-		putText(img, fileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
-		img.copyTo(backupImg);
+		putText(gImg, fileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
+		//img.copyTo(backupImg);
 		posBuf.clear();
 		negBuf.clear();
-		imshow("image", img);
+		imshow("image", gImg);
+		setMouseCallback("image", onMouse, (void *)&posBuf);
 		while (1)
 		{
 			char c = cvWaitKey(0);
@@ -386,13 +402,13 @@ int main1(int argc, TCHAR* argv[])
 					if (negBuf.size() > 0)
 						negBuf.pop_back();
 				}
-				restortImage(img, posBuf, negBuf);
-				imshow("image", img);
+				restortImage(gImg, posBuf, negBuf);
+				imshow("image", gImg);
 			}
 			else if (c == 13) // press enter
 			{
 				{
-					Rect rec(0, 0, img.cols, img.rows);
+					Rect rec(0, 0, gImg.cols, gImg.rows);
 					negBuf.clear();
 					negBuf.push_back(rec);
 				}

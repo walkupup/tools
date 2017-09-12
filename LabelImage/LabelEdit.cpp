@@ -14,6 +14,12 @@ public:
 	std::vector<cv::Rect> rois;
 };
 
+extern vector<Rect> posBuf;
+extern cv::Mat gImg;
+
+// 鼠标回调函数，矩形框
+void onMouse(int event, int x, int y, int, void*);
+
 // 在图像img上画rois矩形，显示信息info
 void showRois(cv::Mat img, string info, vector<cv::Rect> rois, cv::Scalar color, cv::Scalar color1)
 {
@@ -96,26 +102,39 @@ void labelEidt(string fileName)
 	string outFileName = fileName;
 	outFileName.insert(outFileName.length() - 4, "-out");
 
-	labels = readRectLableOneSampleOneLine(fileName);
+	labels = readRectLable(fileName);
+	namedWindow("image");// 0);
+	Mat img;
+	printf("\n查看/编辑模式。\n请确保当前目录下存在pos.txt，并删除pos-out.txt，编辑后结果输出在pos-out.txt中\n");
 
 	// 显示每一条记录
 	for (unsigned int j = 0; j < labels.size(); j++)
 	{
 		ImageLabel curLabel = labels[j];
-		Mat img = imread(curLabel.name, 1);
+		cout << curLabel.name << endl;
+		img = imread(curLabel.name, 1);
 		if (img.data == NULL)
 			continue;
 		Mat orgImg = img.clone();
+		img.copyTo(gImg);
 
 		showRois(img, curLabel.name, curLabel.rois, color, color1);
-		imshow("pos", img);
+		imshow("image", img);
+		posBuf.clear();
+		for (size_t i = 0; i < curLabel.rois.size(); i++)
+		{
+			posBuf.push_back(curLabel.rois[i]);
+		}
+		setMouseCallback("image", onMouse, (void*)&curLabel.rois);
 
 		// 处理按键
 		while (1)
 		{
 			char c = waitKey(0);
 			if (c == ' ')
+			{
 				break;
+			}
 			else if (c == 8)	// backspace
 			{
 				if (curLabel.rois.size() == 0)
@@ -123,7 +142,7 @@ void labelEidt(string fileName)
 				curLabel.rois.pop_back();
 				orgImg.copyTo(img);
 				showRois(img, curLabel.name, curLabel.rois, color, color1);
-				imshow("pos", img);
+				imshow("image", img);
 			}
 			else if (c == 9) // Tab
 			{
@@ -131,7 +150,7 @@ void labelEidt(string fileName)
 				curLabel.rois.insert(curLabel.rois.begin(), curLabel.rois[curLabel.rois.size() - 1]);
 				curLabel.rois.pop_back();
 				showRois(img, curLabel.name, curLabel.rois, color, color1);
-				imshow("pos", img);
+				imshow("image", img);
 			}
 		}
 		if (curLabel.rois.size() > 0)
@@ -139,12 +158,21 @@ void labelEidt(string fileName)
 		// 输出
 		size_t i = outLabels.size() - 1;
 		std::ofstream outfile(outFileName, ios::app);
+		
+		outfile << outLabels[i].name << " " << outLabels[i].rois.size();
 		for (unsigned int j = 0; j < outLabels[i].rois.size(); j++)
-			outfile << outLabels[i].name << " " << 1
-			<< " " << outLabels[i].rois[j].x
+			outfile << " " << outLabels[i].rois[j].x 
 			<< " " << outLabels[i].rois[j].y
 			<< " " << outLabels[i].rois[j].width
-			<< " " << outLabels[i].rois[j].height << endl;
+			<< " " << outLabels[i].rois[j].height;
+		outfile << endl;
+
+		//for (unsigned int j = 0; j < outLabels[i].rois.size(); j++)
+		//	outfile << outLabels[i].name << " " << 1
+		//	<< " " << outLabels[i].rois[j].x
+		//	<< " " << outLabels[i].rois[j].y
+		//	<< " " << outLabels[i].rois[j].width
+		//	<< " " << outLabels[i].rois[j].height << endl;
 	}
 
 }

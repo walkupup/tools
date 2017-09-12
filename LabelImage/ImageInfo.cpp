@@ -132,12 +132,12 @@ void ImageInfo::removeOnePoint()
 
 void ImageInfo::savePoints()
 {
-	if ((fpos = fopen("pos.txt", "a")) == NULL)
+	if ((fpos = fopen("pos.txt", "at")) == NULL)
 	{
 		printf("create txt failed\n");
 		return;
 	}
-	if ((fneg = fopen("neg.txt", "a")) == NULL)
+	if ((fneg = fopen("neg.txt", "at")) == NULL)
 	{
 		printf("create txt failed\n");
 		return;
@@ -153,7 +153,8 @@ void ImageInfo::savePoints()
 	n = count_;
 	if (objName == VEHICLE_OBJ)
 	{
-		fprintf(fpos, "%s %d", imageFileName, n * 2);
+		if (n > 0)
+			fprintf(fpos, "%s %d", imageFileName.c_str(), n * 2);
 		for (int i = 0; i < n; i++)
 		{
 			vector<Rect> vr = vehiclePoint2Rect(posBuf[i]);
@@ -163,7 +164,8 @@ void ImageInfo::savePoints()
 	}
 	else
 	{
-		fprintf(fpos, "%s %d", imageFileName, n);
+		if (n > 0)
+			fprintf(fpos, "%s %d", imageFileName.c_str(), n);
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < numPoints; j++)
@@ -172,7 +174,8 @@ void ImageInfo::savePoints()
 			}
 		}
 	}
-	fprintf(fpos, "\n");
+	if (n > 0)
+		fprintf(fpos, "\n");
 	fclose(fpos);
 	fclose(fneg);
 	count_ = 0;
