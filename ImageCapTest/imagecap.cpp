@@ -1,17 +1,18 @@
 #include <iostream>
+#include <stdio.h>
 #include "opencv2/opencv.hpp"
 
 using namespace cv;
 
 int main(int, char**)
 {
-	int width = 720;
-	int height = 576;
+	int width = 640;
+	int height = 480;
 	int frameNum = 0;
 	VideoCapture cap(0); // open the default camera
 	Mat frame;
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
+	//cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
+	//cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
 	printf("width = %d, height = %d\n", (int)cap.get(CV_CAP_PROP_FRAME_WIDTH), (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT));
 	printf("framerate = %f, format = %f\n", cap.get(CV_CAP_PROP_FPS), cap.get(CV_CAP_PROP_FORMAT));
 
@@ -26,7 +27,7 @@ int main(int, char**)
 		imshow("capture", frame);
 		char name[100];
 		sprintf(name, "frame%d.jpg", frameNum++);
-		if (waitKey(1) == ' ')
+		if (waitKey(20) != ' ')
 		{
 			imwrite(name, frame);
 		}
