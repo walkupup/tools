@@ -55,12 +55,12 @@ void recordLabelsOne(FILE *fp, char *name, vector<Rect> rec)
 }
 
 // 记录多个Label
-void recordLabels(FILE *fp, char *name, vector<Rect> rec)
+void recordLabels(FILE *fp, char *name, vector<Rect> rec, int scale)
 {
 	int i;
 	fprintf(fp, "%s %d", name, rec.size());
 	for (i = 0; i < rec.size(); i++)
-		fprintf(fp, " %d %d %d %d", rec[i].x, rec[i].y, rec[i].width, rec[i].height);
+		fprintf(fp, " %d %d %d %d", rec[i].x * scale, rec[i].y * scale, rec[i].width * scale, rec[i].height * scale);
 	fprintf(fp, "\n");
 	return;
 }
@@ -369,12 +369,20 @@ int main(int argc, TCHAR* argv[])
 		}
 
 		printf("%s\n", fileName);
-		gImg = imread(fileName, CV_LOAD_IMAGE_COLOR);
-		if (gImg.data == NULL)
+		cv::Mat gImg_ = imread(fileName, CV_LOAD_IMAGE_COLOR);
+		if (gImg_.data == NULL)
 		{
 			printf("文件 %s 丢失, 或标注完成\n", fileName);
 			continue;
 		}
+		int scale = 1;
+		if (gImg_.rows > 960 || gImg_.cols > 1280)
+		{
+			scale = 2;
+			cv::resize(gImg_, gImg, cv::Size(gImg_.cols / scale, gImg_.rows / scale));
+		}
+		else
+			gImg = gImg_;
 		putText(gImg, fileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
 		//img.copyTo(backupImg);
 		posBuf.clear();
@@ -386,8 +394,8 @@ int main(int argc, TCHAR* argv[])
 			char c = cvWaitKey(0);
 			if (c == ' ')	// 空格
 			{
-				recordLabels(fpos, fileName, posBuf);
-				recordLabels(fneg, fileName, negBuf);
+				recordLabels(fpos, fileName, posBuf, scale);
+				recordLabels(fneg, fileName, negBuf, scale);
 				break;
 			}
 			else if (c == 8)	// press backspace
@@ -412,7 +420,7 @@ int main(int argc, TCHAR* argv[])
 					negBuf.clear();
 					negBuf.push_back(rec);
 				}
-				recordLabels(fneg, fileName, negBuf);
+				recordLabels(fneg, fileName, negBuf, scale);
 				break;
 			}
 			//else
