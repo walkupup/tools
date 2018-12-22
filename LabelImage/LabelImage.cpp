@@ -216,7 +216,7 @@ void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 	}
 }
 
-int main(int argc, TCHAR* argv[])
+int main1(int argc, TCHAR* argv[])
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind = NULL;

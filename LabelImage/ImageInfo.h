@@ -3,6 +3,8 @@
 using namespace std;
 using namespace cv;
 
+#define MAX_OBJ_NUM 3000 // 单张图的最大目标个数
+
 enum ObjectName
 {
 	RECT_OBJ = 0,
@@ -30,6 +32,8 @@ public:
 	int numPoints;
 	std::string imageFileName;
 	FILE *fpos, *fneg;
+	vector<cv::Scalar> colors;
+	int radius;
 
 	// 新一帧图像，返回<0表示失败.
 	int newImage(std::string name);
@@ -46,6 +50,11 @@ public:
 
 	// 显示画面图像
 	Mat getShowImage();
+
+	// 显示点的大小，支持1和2
+	void setShowPointSize(int r);
+
+	void setShowScale();
 
 	// 车辆点转换为矩形
 	vector<Rect> vehiclePoint2Rect(vector<Point2d> pts);

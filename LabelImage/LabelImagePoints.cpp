@@ -123,7 +123,7 @@ static void showLabels(FILE *fp, CvScalar& color, int save, int ms)
 	}
 }
 
-int main1(int argc, TCHAR* argv[])
+int main(int argc, TCHAR* argv[])
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind = NULL;
@@ -137,7 +137,11 @@ int main1(int argc, TCHAR* argv[])
 	int i;
 	int numPoints;
 
-	printf("关键点标注工具，请输入选项：\n\
+	printf("\n标注工具。一幅图可标注多个目标。\n\
+说明：按Enter跳过当前图像，按空格保存当前结果并标注下一张图，按Backspace删除上一个标注。\
+按1显示小点，按2显示大点\n\n");
+
+	printf("请输入选项：\n\
 按帧号标注 s:起始帧号, 任意顺序标注x, 查看正样本p, 查看负样本n ");
 	scanf("%s", buf);
 	fflush(stdin);
@@ -172,8 +176,7 @@ int main1(int argc, TCHAR* argv[])
 	else
 		return 0;
 
-//	printf("\n标注工具。鼠标左键拖动标注正样本，右键拖动标注负样本，一幅图可标注多个目标。\n \
-快捷键：按Enter标注整张图为负样本，按空格标注下一张图，按Backspace删除上一个标注。\n");
+
 
 	if (buf[0] == 's') // 按帧号标注
 	{
@@ -227,20 +230,20 @@ int main1(int argc, TCHAR* argv[])
 	else if (buf[0] == 'x') // 任意顺序标注
 	{
 		// 查找png 或 jpg 文件
-		hFind = FindFirstFile(_T("*.png"), &FindFileData);
+		hFind = FindFirstFile(_T("*.*"), &FindFileData);
 		if (hFind == INVALID_HANDLE_VALUE)
 		{
-			hFind = FindFirstFile(_T("*.jpg"), &FindFileData);
-			if (hFind == INVALID_HANDLE_VALUE)
-			{
-				printf("没有找到png或jpg文件 (%d)\n", GetLastError());
-				return -2;
-			}
-			else
-				printf("找到 jpg 文件! \n");
+			//hFind = FindFirstFile(_T("*.jpg"), &FindFileData);
+			//if (hFind == INVALID_HANDLE_VALUE)
+			//{
+			//	printf("没有找到png或jpg文件 (%d)\n", GetLastError());
+			//	return -2;
+			//}
+			//else
+			//	printf("找到 jpg 文件! \n");
 		}
-		else
-			printf("找到 png 文件! \n");
+		//else
+		//	printf("找到 png 文件! \n");
 	}
 
 	namedWindow("image");// 0);
@@ -269,17 +272,33 @@ int main1(int argc, TCHAR* argv[])
 		else if (buf[0] == 'x')
 		{
 			WideCharToMultiByte(CP_OEMCP, NULL, FindFileData.cFileName, -1, fileName, 200, NULL, FALSE);
-			if (!FindNextFile(hFind, &FindFileData))
-				break;
+			if ((strlen(fileName) < 5) ||
+				(strcmp(&fileName[strlen(fileName) - 3], "jpg") != 0 &&
+				strcmp(&fileName[strlen(fileName) - 3], "JPG") != 0 &&
+				strcmp(&fileName[strlen(fileName) - 3], "png") != 0 &&
+				strcmp(&fileName[strlen(fileName) - 3], "PNG") != 0 && 
+				strcmp(&fileName[strlen(fileName) - 3], "bmp") != 0 && 
+				strcmp(&fileName[strlen(fileName) - 3], "BMP") != 0 ))
+			{
+				printf("%s skipped\n", fileName);
+				if (!FindNextFile(hFind, &FindFileData))
+					break;
+				continue;
+			}
 		}
 
 		printf("%s\n", fileName);
 		if (ii->newImage(fileName) < 0)
 		{
-			printf("文件 %s 丢失, 或标注完成\n", fileName);
+			printf("文件 %s 错误, 或标注已完成\n", fileName);
 			continue;
 		}
-		imshow("image", ii->getShowImage());
+		cv::Mat showImg = ii->getShowImage();
+		//cv::resizeWindow("image", showImg.cols, showImg.rows);
+		//cv::setWindowProperty("image", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+		imshow("image", showImg);
+		int curWinX = 0;
+		int curWinY = 0;
 		while (1)
 		{
 			char c = cvWaitKey(0);
@@ -303,10 +322,43 @@ int main1(int argc, TCHAR* argv[])
 				//savePoints(fneg, fileName, negBuf);
 				break;
 			}
+			else if (c == 'a')
+			{
+				curWinX -= 20;
+				cv::moveWindow("image", curWinX, curWinY);
+			}
+			else if (c == 's')
+			{
+				curWinY += 20;
+				cv::moveWindow("image", curWinX, curWinY);
+			}
+			else if (c == 'd')
+			{
+				curWinX += 20;
+				cv::moveWindow("image", curWinX, curWinY);
+			}
+			else if (c == 'w')
+			{
+				curWinY -= 20;
+				cv::moveWindow("image", curWinX, curWinY);
+			}
+
+			else if (c == '1')
+			{
+				ii->setShowPointSize(1);
+			}
+			else if (c == '2')
+			{
+				ii->setShowPointSize(2);
+			}
 		}
 		curNum++;
-
-	} //while (FindNextFile(hFind, &FindFileData));
+		if (buf[0] == 'x')
+		{
+			if (!FindNextFile(hFind, &FindFileData))
+				break;
+		}
+	}
 
 	delete ii;
 	return 0;

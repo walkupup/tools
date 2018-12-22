@@ -12,7 +12,7 @@ ImageInfo::ImageInfo(int pointNum, int objectName, std::string resultName)
 	lastFlag = 1;
 
 	img.copyTo(backupImg);
-	posBuf.resize(100);
+	posBuf.resize(MAX_OBJ_NUM);
 	for (int i = 0; i < posBuf.size(); i++)
 	{
 		posBuf[i].resize(numPoints);
@@ -31,6 +31,19 @@ ImageInfo::ImageInfo(int pointNum, int objectName, std::string resultName)
 	if ((fneg = fopen("neg.txt", "wt")) == NULL)
 		printf("create txt failed\n");
 	fclose(fneg);
+
+	colors.resize(10);
+	colors[0] = cv::Scalar(255, 0, 0);
+	colors[1] = cv::Scalar(0, 255, 0);
+	colors[2] = cv::Scalar(0, 0, 255);
+	colors[3] = cv::Scalar(255, 255, 0);
+	colors[4] = cv::Scalar(0, 255, 255);
+	colors[5] = cv::Scalar(255, 0, 255);
+	colors[6] = cv::Scalar(128, 255, 0);
+	colors[7] = cv::Scalar(0, 128, 255);
+	colors[8] = cv::Scalar(255, 0, 128);
+	colors[9] = cv::Scalar(0, 255, 128);
+	radius = 2;
 }
 ImageInfo::~ImageInfo()
 {
@@ -75,9 +88,11 @@ Mat ImageInfo::getShowImage()
 	backupImg.copyTo(img);
 	for (int i = 0; i < posBuf.size(); i++)
 	{
+		if (i > count_)
+			break;
 		for (int j = 0; j < posBuf[i].size(); j++)
 			if (posBuf[i][j].x > 0 || posBuf[i][j].y > 0)
-				circle(img, posBuf[i][j], 2, Scalar(0, 0, 255), -1);
+				circle(img, posBuf[i][j], radius, colors[i % colors.size()], -1);
 	}
 	if (objName == VEHICLE_OBJ) 
 	{
@@ -88,7 +103,9 @@ Mat ImageInfo::getShowImage()
 			rectangle(img, vr[0], Scalar(0, 0, 255), 1);
 		}
 	}
-	putText(img, imageFileName, Point(1, 10), FONT_HERSHEY_SIMPLEX, 0.4, CV_RGB(255, 0, 0));
+	std::ostringstream info;
+	info << num << "," << count_ << "," << imageFileName;
+	putText(img, info.str(), Point(1, 8), FONT_HERSHEY_SIMPLEX, 0.3, CV_RGB(255, 0, 0));
 	return img;
 }
 
@@ -190,3 +207,15 @@ void ImageInfo::savePoints()
 	}
 	return;
 }
+
+void ImageInfo::setShowPointSize(int r)
+{
+	if (r < 0 || r > 2)
+		r = 2;
+	radius = r;
+}
+
+void ImageInfo::setShowScale()
+{
+}
+
