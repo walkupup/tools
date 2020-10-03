@@ -18,19 +18,22 @@ void myDisplay(void)
 	glLoadIdentity();
 	gluLookAt(0, -200000000, 200000000, 0, 0, 0, 0, 0, 1);//整体布局，视角位置（这里是45度倾角），物体位置，z轴正向
 
-														  //绘制红色太阳
+	//绘制红色太阳													  
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glutSolidSphere(69600000, 20, 20);
+	
 	//绘制蓝色的地球
 	glColor3f(0.0f, 0.0f, 1.0f);
 	glRotatef(day / 360.0 * 360, 0.0f, 0.0f, -1.0f);
 	glTranslatef(150000000, 0.0f, 0.0f);
 	glutSolidSphere(15945000, 20, 20);
+	
 	//绘制黄色的“月亮”
 	glColor3f(1.0f, 1.0f, 0.0f);
 	glRotatef(day / 30.0 * 360 - day / 360.0 * 360, 0.0f, 0.0f, -1);
 	glTranslatef(38000000, 0.0f, 0.0f);
 	glutSolidSphere(4345000, 20, 20);
+	
 	glFlush();
 	glutSwapBuffers();
 }
