@@ -60,6 +60,7 @@ void display()
 	//重新设置OpenGL窗口：原点位置为左上角，x轴从左到右，y轴从上到下，坐标值与像素坐标值相同
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	glMatrixMode(GL_MODELVIEW);//矩阵为视图模式
+	glLoadIdentity();
 	glRotatef(theta, 0.0f, 0.0f, -1.0f);
 
 
@@ -125,8 +126,8 @@ void processKeys(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
-	case 'w': theta += 0.1; break;
-	case 's': theta -= 0.1; break;
+	case 'w': theta += 0.8; break;
+	case 's': theta -= 0.8; break;
 	case 'a': phi += 0.1; break;
 	case 'd': phi -= 0.1; break;
 	case 't': if (RR < 100) RR += 0.1f; break;
