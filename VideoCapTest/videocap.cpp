@@ -9,18 +9,19 @@ int main(int, char**)
 	int height = 480;
 	int fps = 5;
 	int frameNum = 0;
-	VideoCapture cap(0); // open the default camera"E:\\data\\recored-hd\\32west1-1.mp4"
-	Mat frame;
-	std::string videoName = "d:\\1.avi";
-	cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
-	cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
-	printf("width = %d, height = %d\n", (int)cap.get(CV_CAP_PROP_FRAME_WIDTH), (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT));
-	printf("framerate = %f, format = %f\n", cap.get(CV_CAP_PROP_FPS), cap.get(CV_CAP_PROP_FORMAT));
-
-	cap >> frame; // get a new frame from camera
-	VideoWriter save(videoName, -1, 15, Size(frame.cols, frame.rows));
+	//VideoCapture cap("rtsp://admin:admin123456@192.168.1.64:554/h264/ch1/main/av_stream"); // open the default camera"E:\\data\\recored-hd\\32west1-1.mp4"
+	VideoCapture cap("rtsp://admin:admin123456@192.168.1.64/main/Channels/1");//("rtsp://admin:admin123456@192.168.1.156:554/ch1/1");
 	if (!cap.isOpened()) // check if we succeeded
 		return -1;
+	Mat frame;
+	std::string videoName = "d:\\1.avi";
+	//cap.set(CV_CAP_PROP_FRAME_WIDTH, width);
+	//cap.set(CV_CAP_PROP_FRAME_HEIGHT, height);
+	//printf("width = %d, height = %d\n", (int)cap.get(CV_CAP_PROP_FRAME_WIDTH), (int)cap.get(CV_CAP_PROP_FRAME_HEIGHT));
+	//printf("framerate = %f, format = %f\n", cap.get(CV_CAP_PROP_FPS), cap.get(CV_CAP_PROP_FORMAT));
+
+	cap >> frame; // get a new frame from camera
+	//VideoWriter save(videoName, -1, 15, Size(frame.cols, frame.rows));
 	//namedWindow("capture", 1);
 	printf("start recording to %s, press c to stop\n", videoName.c_str());
 
@@ -32,13 +33,13 @@ int main(int, char**)
 			printf("error\n");
 			continue;
 		}
-		save << frame;
+		//save << frame;
 		imshow("capture", frame);
 		printf("frame %d\n", frameNum++);
 		if (waitKey(1) == 'c')
 			break;
 	}
 
-	save.release();
+	//save.release();
 	return 0;
 }

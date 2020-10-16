@@ -12,11 +12,11 @@ void myDisplay(void)
 
 	glMatrixMode(GL_PROJECTION);//矩阵为投影变换模式
 	glLoadIdentity();//获得单位矩阵
-	gluPerspective(75, 1, 1, 400000000);//透视变换角度75度，长宽比1：1，最近可视距离1，最远400000000两倍地球公转半径
+	gluPerspective(90, 1, 1, 400000000);//透视变换角度75度，长宽比1：1，最近可视距离1，最远400000000两倍地球公转半径
 
 	glMatrixMode(GL_MODELVIEW);//矩阵为视图模式
 	glLoadIdentity();
-	gluLookAt(0, -200000000, 200000000, 0, 0, 0, 0, 0, 1);//整体布局，视角位置（这里是45度倾角），物体位置，z轴正向
+	gluLookAt(0, 0, 200000000, 0, 0, 0, 0, 1, 0);//整体布局，视角位置（这里是45度倾角），物体位置，z轴正向
 
 	//绘制红色太阳													  
 	glColor3f(1.0f, 0.0f, 0.0f);

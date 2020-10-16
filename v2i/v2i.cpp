@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	{
 		//sprintf_s(name, 200, "%s%d.avi", DIR_SEQ, j);
 		VideoCapture v1(argv[1]);
-		frameCount = v1.get(CV_CAP_PROP_FRAME_COUNT);
+		frameCount = v1.get(cv::CAP_PROP_FRAME_COUNT);
 
 		sprintf_s(path, 200, "md img");
 		system(path);
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 		for (i = 0; i < frameCount; i++)
 		{
 			v1.read(img);
-			if (i % 20 == 0)
+			if (i % 2 == 0)
 			{
 				sprintf_s(name, 200, "img/%s%08d.%s", preName, i, extName);
 				printf("writing frame %d / %d\n", i, frameCount);
